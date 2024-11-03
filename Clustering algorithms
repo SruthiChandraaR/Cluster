@@ -1,0 +1,73 @@
+# Import necessary libraries
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans, AgglomerativeClustering
+from sklearn.metrics import silhouette_score
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# For Google Colab: Uncomment if you're in Colab
+# from google.colab import files
+# uploaded = files.upload()  # Upload dataset CSV file from your system
+
+# Load the dataset after uploading
+# Replace 'your_dataset.csv' with the actual filename after upload
+data = pd.read_csv("data.csv")  # Adjust filename if needed
+print("Dataset loaded successfully!\n")
+
+# Inspect the first few rows
+print(data.head())
+
+# Select relevant columns (e.g., danceability, energy, loudness, tempo)
+features = data[['danceability', 'energy', 'loudness', 'tempo']]
+
+# Standardize the features for better clustering performance
+scaler = StandardScaler()
+scaled_features = scaler.fit_transform(features)
+
+# Function to plot clusters
+def plot_clusters(data, labels, title):
+    sns.scatterplot(x=data[:, 0], y=data[:, 1], hue=labels, palette='viridis')
+    plt.title(title)
+    plt.xlabel('Feature 1')
+    plt.ylabel('Feature 2')
+    plt.show()
+
+# Initial Clustering: Display Initial State (Random Assignment for Visualization)
+plot_clusters(scaled_features, np.random.randint(0, 5, len(scaled_features)), 'Initial Random Clusters')
+
+# K-Means Clustering
+kmeans = KMeans(n_clusters=5, random_state=42)  # Experiment with different n_clusters
+kmeans_labels = kmeans.fit_predict(scaled_features)
+
+print("\nK-Means Final Clusters and Centroids:")
+print(kmeans.cluster_centers_)
+print("K-Means Inertia (Error Rate):", kmeans.inertia_)
+
+# Plot K-Means Clusters
+plot_clusters(scaled_features, kmeans_labels, 'K-Means Clustering')
+
+# Agglomerative Clustering
+agglo = AgglomerativeClustering(n_clusters=5)
+agglo_labels = agglo.fit_predict(scaled_features)
+
+# Plot Agglomerative Clustering
+plot_clusters(scaled_features, agglo_labels, 'Agglomerative Clustering')
+
+# Final clusters and error metrics for both clustering methods
+print("\nK-Means Cluster Labels:", kmeans_labels)
+print("Agglomerative Cluster Labels:", agglo_labels)
+
+# Error Metrics
+print("\n--- Error and Evaluation Metrics ---")
+# K-Means Inertia (Error Rate)
+error_rate_kmeans = kmeans.inertia_
+print("K-Means Error Rate (Inertia):", error_rate_kmeans)
+
+# Alternative Metric for Agglomerative Clustering (Silhouette Score)
+silhouette_kmeans = silhouette_score(scaled_features, kmeans_labels)
+silhouette_agglo = silhouette_score(scaled_features, agglo_labels)
+
+print("K-Means Silhouette Score:", silhouette_kmeans)
+print("Agglomerative Silhouette Score:", silhouette_agglo)
